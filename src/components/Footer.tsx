@@ -13,8 +13,8 @@ export default function Footer() {
         {/* Center Column: Address */}
         <div className="text-center mb-4 md:mb-0">
           <p className="font-semibold text-slate-200 mb-1">Office Location</p>
-          <p>Prayukti Bhaban, Jadavpur University, Main Campus</p>
-          <p>188, Raja S.C. Mallick Rd</p>
+          <p>Dept. of Civil Engg., Prayukti Bhaban, Jadavpur University</p>
+          <p>Main Campus, 188, Raja S.C. Mallick Rd</p>
           <p>Kolkata, West Bengal 700032</p>
         </div>
 
