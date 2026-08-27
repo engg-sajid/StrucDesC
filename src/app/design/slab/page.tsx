@@ -19,8 +19,6 @@ export default function SlabDesign() {
   const [barDia, setBarDia] = useState(8);
 
   const [results, setResults] = useState<any>(null);
-
-  // Interactive Output States
   const [editableDepth, setEditableDepth] = useState<string | number>("");
   const [editableSx, setEditableSx] = useState<string | number>("");
 
@@ -44,94 +42,94 @@ export default function SlabDesign() {
 
   const table26Data: Record<string, number[][]> = {
     interior: [
-      [0.032, 0.045, 0.024, 0.034],
-      [0.036, 0.05, 0.022, 0.031],
-      [0.039, 0.055, 0.02, 0.028],
-      [0.043, 0.059, 0.018, 0.025],
-      [0.046, 0.063, 0.016, 0.023],
-      [0.05, 0.067, 0.015, 0.021],
-      [0.056, 0.075, 0.012, 0.017],
-      [0.06, 0.081, 0.01, 0.014],
+      [0.024, 0.032, 0.024, 0.032],
+      [0.028, 0.037, 0.024, 0.032],
+      [0.032, 0.043, 0.024, 0.032],
+      [0.036, 0.047, 0.024, 0.032],
+      [0.039, 0.051, 0.024, 0.032],
+      [0.041, 0.053, 0.024, 0.032],
+      [0.045, 0.06, 0.024, 0.032],
+      [0.049, 0.065, 0.024, 0.032],
     ],
     one_short_discontinuous: [
-      [0.04, 0.054, 0.03, 0.041],
-      [0.045, 0.06, 0.027, 0.037],
-      [0.049, 0.065, 0.025, 0.034],
-      [0.053, 0.07, 0.023, 0.031],
-      [0.057, 0.075, 0.021, 0.028],
-      [0.06, 0.079, 0.019, 0.026],
-      [0.068, 0.089, 0.015, 0.021],
-      [0.074, 0.095, 0.012, 0.017],
+      [0.028, 0.037, 0.028, 0.037],
+      [0.032, 0.043, 0.028, 0.037],
+      [0.036, 0.048, 0.028, 0.037],
+      [0.039, 0.051, 0.028, 0.037],
+      [0.041, 0.055, 0.028, 0.037],
+      [0.044, 0.057, 0.028, 0.037],
+      [0.048, 0.064, 0.028, 0.037],
+      [0.052, 0.068, 0.028, 0.037],
     ],
     one_long_discontinuous: [
-      [0.04, 0.054, 0.03, 0.041],
-      [0.044, 0.058, 0.028, 0.038],
-      [0.048, 0.063, 0.026, 0.035],
-      [0.051, 0.067, 0.024, 0.032],
-      [0.054, 0.071, 0.022, 0.03],
-      [0.057, 0.074, 0.02, 0.028],
-      [0.064, 0.083, 0.016, 0.022],
-      [0.069, 0.089, 0.013, 0.018],
+      [0.028, 0.037, 0.028, 0.037],
+      [0.033, 0.044, 0.028, 0.037],
+      [0.039, 0.052, 0.028, 0.037],
+      [0.044, 0.057, 0.028, 0.037],
+      [0.047, 0.063, 0.028, 0.037],
+      [0.051, 0.067, 0.028, 0.037],
+      [0.059, 0.077, 0.028, 0.037],
+      [0.065, 0.085, 0.028, 0.037],
     ],
     two_adjacent_discontinuous: [
+      [0.035, 0.047, 0.035, 0.047],
+      [0.04, 0.053, 0.035, 0.047],
       [0.045, 0.06, 0.035, 0.047],
-      [0.051, 0.067, 0.032, 0.043],
-      [0.056, 0.073, 0.029, 0.039],
-      [0.061, 0.079, 0.026, 0.035],
-      [0.065, 0.084, 0.024, 0.032],
-      [0.069, 0.088, 0.022, 0.029],
-      [0.078, 0.098, 0.017, 0.023],
-      [0.084, 0.105, 0.014, 0.019],
+      [0.049, 0.065, 0.035, 0.047],
+      [0.053, 0.071, 0.035, 0.047],
+      [0.056, 0.075, 0.035, 0.047],
+      [0.063, 0.084, 0.035, 0.047],
+      [0.069, 0.091, 0.035, 0.047],
     ],
     two_short_discontinuous: [
-      [0.045, 0.06, 0.035, 0.047],
-      [0.05, 0.066, 0.031, 0.042],
-      [0.055, 0.072, 0.028, 0.038],
-      [0.059, 0.077, 0.025, 0.034],
-      [0.063, 0.082, 0.023, 0.031],
-      [0.067, 0.086, 0.021, 0.028],
-      [0.075, 0.095, 0.016, 0.022],
-      [0.081, 0.102, 0.013, 0.018],
+      [0.035, 0.045, 0.035, 0],
+      [0.037, 0.049, 0.035, 0],
+      [0.04, 0.052, 0.035, 0],
+      [0.043, 0.056, 0.035, 0],
+      [0.044, 0.059, 0.035, 0],
+      [0.045, 0.06, 0.035, 0],
+      [0.049, 0.065, 0.035, 0],
+      [0.052, 0.069, 0.035, 0],
     ],
     two_long_discontinuous: [
-      [0.045, 0.06, 0.035, 0.047],
-      [0.049, 0.065, 0.03, 0.041],
-      [0.053, 0.07, 0.027, 0.036],
-      [0.057, 0.074, 0.024, 0.032],
-      [0.06, 0.078, 0.021, 0.029],
-      [0.063, 0.082, 0.019, 0.026],
-      [0.071, 0.09, 0.014, 0.02],
-      [0.076, 0.097, 0.011, 0.015],
+      [0.035, 0, 0.035, 0.045],
+      [0.043, 0, 0.035, 0.045],
+      [0.051, 0, 0.035, 0.045],
+      [0.057, 0, 0.035, 0.045],
+      [0.063, 0, 0.035, 0.045],
+      [0.068, 0, 0.035, 0.045],
+      [0.08, 0, 0.035, 0.045],
+      [0.088, 0, 0.035, 0.045],
     ],
     three_discontinuous_one_long_continuous: [
-      [0.051, 0.068, 0.04, 0.054],
-      [0.057, 0.075, 0.036, 0.049],
-      [0.063, 0.081, 0.033, 0.044],
-      [0.068, 0.087, 0.03, 0.04],
-      [0.072, 0.092, 0.027, 0.037],
-      [0.076, 0.097, 0.025, 0.034],
-      [0.085, 0.107, 0.019, 0.026],
-      [0.092, 0.115, 0.015, 0.021],
+      [0.043, 0.057, 0.043, 0],
+      [0.048, 0.064, 0.043, 0],
+      [0.053, 0.071, 0.043, 0],
+      [0.057, 0.076, 0.043, 0],
+      [0.06, 0.08, 0.043, 0],
+      [0.064, 0.084, 0.043, 0],
+      [0.069, 0.091, 0.043, 0],
+      [0.073, 0.097, 0.043, 0],
     ],
     three_discontinuous_one_short_continuous: [
-      [0.051, 0.068, 0.04, 0.054],
-      [0.056, 0.073, 0.033, 0.045],
-      [0.06, 0.078, 0.029, 0.039],
-      [0.064, 0.083, 0.026, 0.035],
-      [0.068, 0.088, 0.023, 0.031],
-      [0.071, 0.091, 0.021, 0.028],
-      [0.079, 0.101, 0.015, 0.021],
-      [0.085, 0.108, 0.012, 0.016],
+      [0.043, 0, 0.043, 0.057],
+      [0.051, 0, 0.043, 0.057],
+      [0.059, 0, 0.043, 0.057],
+      [0.065, 0, 0.043, 0.057],
+      [0.071, 0, 0.043, 0.057],
+      [0.076, 0, 0.043, 0.057],
+      [0.087, 0, 0.043, 0.057],
+      [0.096, 0, 0.043, 0.057],
     ],
     four_edges_discontinuous: [
-      [0.062, 0.083, 0.048, 0.064],
-      [0.069, 0.091, 0.043, 0.058],
-      [0.075, 0.099, 0.039, 0.052],
-      [0.081, 0.106, 0.035, 0.047],
-      [0.086, 0.112, 0.032, 0.043],
-      [0.09, 0.118, 0.029, 0.039],
-      [0.1, 0.13, 0.023, 0.031],
-      [0.107, 0.138, 0.019, 0.026],
+      [0.056, 0, 0.056, 0],
+      [0.064, 0, 0.056, 0],
+      [0.072, 0, 0.056, 0],
+      [0.079, 0, 0.056, 0],
+      [0.085, 0, 0.056, 0],
+      [0.089, 0, 0.056, 0],
+      [0.1, 0, 0.056, 0],
+      [0.107, 0, 0.056, 0],
     ],
   };
 
@@ -229,17 +227,21 @@ export default function SlabDesign() {
       const Mty1 = coeffs.alphaY1 * factoredW * Math.pow(effLx / 1000, 2);
       const maxM = Math.max(Mtx, Mtx1, Mty, Mty1);
 
-      const Rmax = 0.138 * fck;
+      let rMaxFactor = 0.138;
+      if (fy === 500) rMaxFactor = 0.133;
+      if (fy === 550) rMaxFactor = 0.13;
+
+      const Rmax = rMaxFactor * fck;
       const dReq = Math.sqrt((maxM * 1000000) / (Rmax * 1000));
 
       const calcPt = (M: number, d: number) => {
+        if (M === 0) return 0;
         const momentInNmm = M * 1000000;
         const innerTerm = 1 - (4.6 * momentInNmm) / (fck * 1000 * d * d);
         if (innerTerm < 0) return null;
         return ((50 * fck) / fy) * (1 - Math.sqrt(innerTerm));
       };
 
-      // Used davg for Required Pt sizing
       const Ptx = calcPt(Mtx, davg);
       const Ptx1 = calcPt(Mtx1, davg);
       const Pty = calcPt(Mty, davg);
@@ -260,24 +262,27 @@ export default function SlabDesign() {
 
       const astBar = (Math.PI / 4) * barDia * barDia;
 
+      // Calculate Exact Theoretical Spacing (No 300mm cap applied here anymore)
       const calcExactSpacing = (Pt: number, d: number) => {
         if (Pt === 0) return 0;
         const AstReq = (Pt / 100) * 1000 * d;
-        const rawSpacing = (astBar / AstReq) * 1000;
-        return Math.min(rawSpacing, 300);
+        return (astBar / AstReq) * 1000;
       };
 
-      // Used davg for Required Exact Spacing
       const sxReqExact = calcExactSpacing(safePtx, davg);
       const sx1ReqExact = calcExactSpacing(safePtx1, davg);
       const syReqExact = calcExactSpacing(safePty, davg);
       const sy1ReqExact = calcExactSpacing(safePty1, davg);
 
-      const roundSpacingDown = (val: number) =>
-        val > 0 ? Math.floor(val / 5) * 5 : 0;
-      const sxProvAuto = roundSpacingDown(sxReqExact);
+      // Enforce IS 456 limits (Max of 3d or 300mm) ONLY for Spacing Provided
+      const capAndRoundSpacingDown = (val: number, d: number) => {
+        if (val <= 0) return 0;
+        const maxAllowed = Math.min(3 * d, 300);
+        return Math.floor(Math.min(val, maxAllowed) / 5) * 5;
+      };
 
-      // Validation Guardrail for Manual Sx Input
+      const sxProvAuto = capAndRoundSpacingDown(sxReqExact, davg);
+
       if (customSx) {
         if (customSx <= 0) {
           alert("Manual spacing must be greater than 0 mm.");
@@ -291,11 +296,10 @@ export default function SlabDesign() {
         }
       }
 
-      // If manual spacing is provided and safe, use it. Otherwise, use auto-calculated.
       const sxProv = customSx || sxProvAuto;
-      const sx1Prov = roundSpacingDown(sx1ReqExact);
-      const syProv = roundSpacingDown(syReqExact);
-      const sy1Prov = roundSpacingDown(sy1ReqExact);
+      const sx1Prov = capAndRoundSpacingDown(sx1ReqExact, davg);
+      const syProv = capAndRoundSpacingDown(syReqExact, davg);
+      const sy1Prov = capAndRoundSpacingDown(sy1ReqExact, davg);
 
       const astReqX = (safePtx / 100) * 1000 * dx;
 
@@ -350,7 +354,6 @@ export default function SlabDesign() {
       }
 
       const allowedLd = basicLd * modFactor;
-      // Using davg for provided actual ratio limit as requested
       const actualLd = effLx / davg;
 
       const isDepthAdequate = dReq < davg && safePtx > 0;
@@ -410,14 +413,14 @@ export default function SlabDesign() {
         Ptx1: safePtx1.toFixed(3),
         Pty: safePty.toFixed(3),
         Pty1: safePty1.toFixed(3),
-        sxReq: sxReqExact > 0 ? sxReqExact.toFixed(2) : "0",
-        sx1Req: sx1ReqExact > 0 ? sx1ReqExact.toFixed(2) : "0",
-        syReq: syReqExact > 0 ? syReqExact.toFixed(2) : "0",
-        sy1Req: sy1ReqExact > 0 ? sy1ReqExact.toFixed(2) : "0",
-        sxProv,
-        sx1Prov,
-        syProv,
-        sy1Prov,
+        sxReq: sxReqExact > 0 ? sxReqExact.toFixed(2) : "-",
+        sx1Req: sx1ReqExact > 0 ? sx1ReqExact.toFixed(2) : "-",
+        syReq: syReqExact > 0 ? syReqExact.toFixed(2) : "-",
+        sy1Req: sy1ReqExact > 0 ? sy1ReqExact.toFixed(2) : "-",
+        sxProv: sxProv > 0 ? sxProv : "-",
+        sx1Prov: sx1Prov > 0 ? sx1Prov : "-",
+        syProv: syProv > 0 ? syProv : "-",
+        sy1Prov: sy1Prov > 0 ? sy1Prov : "-",
         PtxProv: PtxProv.toFixed(3),
         Ptx1Prov: Ptx1Prov.toFixed(3),
         PtyProv: PtyProv.toFixed(3),
@@ -440,7 +443,7 @@ export default function SlabDesign() {
 
     setResults(finalResults);
     setEditableDepth(finalResults.assumedD);
-    setEditableSx(finalResults.sxProv); // Sync the editable state with the auto or validated spacing
+    setEditableSx(finalResults.sxProv !== "-" ? finalResults.sxProv : "");
   };
 
   const resetForm = () => {
