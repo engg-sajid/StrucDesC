@@ -20,13 +20,17 @@ export default function Footer() {
 
         {/* Right Column: Links */}
         <div className="flex flex-col text-center md:text-right gap-1">
-          <Link href="#" className="hover:text-blue-400 transition-colors">
+          {/* <Link href="#" className="hover:text-blue-400 transition-colors">
             Privacy Policy
           </Link>
           <Link href="#" className="hover:text-blue-400 transition-colors">
             Terms of Service
-          </Link>
-          <Link href="#" className="hover:text-blue-400 transition-colors">
+          </Link> */}
+
+          <Link
+            href="/contact"
+            className="hover:text-blue-400 transition-colors"
+          >
             Contact Support
           </Link>
         </div>
