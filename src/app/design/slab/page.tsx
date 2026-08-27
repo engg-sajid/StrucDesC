@@ -260,9 +260,25 @@ export default function SlabDesign() {
       const safePty = Pty ?? 0;
       const safePty1 = Pty1 ?? 0;
 
+      // IS 456 Clause 26.5.2.1 warning formatter with whitespace-nowrap trick
+      const formatRequiredPt = (pt: number) => {
+        if (pt === 0) return "0.000 %";
+        if (pt < 0.12) {
+          return (
+            <span className="flex items-center whitespace-nowrap">
+              {pt.toFixed(3)} %
+              <span className="text-red-500 ml-2 text-xs font-medium">
+                (minimum 0.12% as per IS 456:2000 Clause 26.5.2.1)
+              </span>
+            </span>
+          );
+        }
+        return `${pt.toFixed(3)} %`;
+      };
+
       const astBar = (Math.PI / 4) * barDia * barDia;
 
-      // Calculate Exact Theoretical Spacing (No 300mm cap applied here anymore)
+      // Removed the Math.min(..., 300) cap so it accurately shows the exact theoretical value required
       const calcExactSpacing = (Pt: number, d: number) => {
         if (Pt === 0) return 0;
         const AstReq = (Pt / 100) * 1000 * d;
@@ -274,7 +290,7 @@ export default function SlabDesign() {
       const syReqExact = calcExactSpacing(safePty, davg);
       const sy1ReqExact = calcExactSpacing(safePty1, davg);
 
-      // Enforce IS 456 limits (Max of 3d or 300mm) ONLY for Spacing Provided
+      // Kept the strict IS 456 limits ONLY for Spacing Provided
       const capAndRoundSpacingDown = (val: number, d: number) => {
         if (val <= 0) return 0;
         const maxAllowed = Math.min(3 * d, 300);
@@ -409,10 +425,12 @@ export default function SlabDesign() {
         Mtx1Bd: ((Mtx1 * 1000000) / (1000 * davg * davg)).toFixed(3),
         MtyBd: ((Mty * 1000000) / (1000 * davg * davg)).toFixed(3),
         Mty1Bd: ((Mty1 * 1000000) / (1000 * davg * davg)).toFixed(3),
-        Ptx: safePtx.toFixed(3),
-        Ptx1: safePtx1.toFixed(3),
-        Pty: safePty.toFixed(3),
-        Pty1: safePty1.toFixed(3),
+
+        PtxStr: formatRequiredPt(safePtx),
+        Ptx1Str: formatRequiredPt(safePtx1),
+        PtyStr: formatRequiredPt(safePty),
+        Pty1Str: formatRequiredPt(safePty1),
+
         sxReq: sxReqExact > 0 ? sxReqExact.toFixed(2) : "-",
         sx1Req: sx1ReqExact > 0 ? sx1ReqExact.toFixed(2) : "-",
         syReq: syReqExact > 0 ? syReqExact.toFixed(2) : "-",
@@ -978,25 +996,25 @@ export default function SlabDesign() {
                     <tr>
                       <td className="px-6 py-3 font-medium">Ptx (reqd)</td>
                       <td className="px-6 py-3 border-l border-slate-100">
-                        {results.Ptx} %
+                        {results.PtxStr}
                       </td>
                     </tr>
                     <tr>
                       <td className="px-6 py-3 font-medium">Ptx1 (reqd)</td>
                       <td className="px-6 py-3 border-l border-slate-100">
-                        {results.Ptx1} %
+                        {results.Ptx1Str}
                       </td>
                     </tr>
                     <tr>
                       <td className="px-6 py-3 font-medium">Pty (reqd)</td>
                       <td className="px-6 py-3 border-l border-slate-100">
-                        {results.Pty} %
+                        {results.PtyStr}
                       </td>
                     </tr>
                     <tr>
                       <td className="px-6 py-3 font-medium">Pty1 (reqd)</td>
                       <td className="px-6 py-3 border-l border-slate-100">
-                        {results.Pty1} %
+                        {results.Pty1Str}
                       </td>
                     </tr>
 

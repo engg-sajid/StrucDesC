@@ -65,6 +65,9 @@ export default function Design() {
                 <p className="text-sm text-slate-500">
                   Singly and doubly reinforced sections
                 </p>
+                <p className="text-xs text-slate-400 mt-2 font-medium italic">
+                  Coming soon...
+                </p>
               </Link>
 
               {/* Column Design Button */}
@@ -81,6 +84,9 @@ export default function Design() {
                 <p className="text-sm text-slate-500">
                   Axial loads and biaxial bending
                 </p>
+                <p className="text-xs text-slate-400 mt-2 font-medium italic">
+                  Coming soon...
+                </p>
               </Link>
 
               {/* Footing Design Button */}
@@ -96,6 +102,9 @@ export default function Design() {
                 </h3>
                 <p className="text-sm text-slate-500">
                   Isolated and combined foundations
+                </p>
+                <p className="text-xs text-slate-400 mt-2 font-medium italic">
+                  Coming soon...
                 </p>
               </Link>
             </div>
