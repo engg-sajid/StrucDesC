@@ -4,7 +4,10 @@ import { useState, useEffect } from "react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import Link from "next/link";
-import { ArrowLeft, Calculator, RotateCcw } from "lucide-react";
+import { ArrowLeft, Calculator, RotateCcw, Save } from "lucide-react";
+import AuthModal from "@/components/AuthModal";
+import { saveCalculationHistory } from "@/actions/history";
+import { executeSlabAnalysis } from "@/lib/engine/slabEngine";
 
 export default function SlabDesign() {
   const [fck, setFck] = useState(25);
@@ -22,154 +25,13 @@ export default function SlabDesign() {
   const [editableDepth, setEditableDepth] = useState<string | number>("");
   const [editableSx, setEditableSx] = useState<string | number>("");
 
+  const [title, setTitle] = useState("");
+  const [saveStatus, setSaveStatus] = useState("");
+  const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
+
   useEffect(() => {
-    setFck(25);
-    setFy(500);
-    setLxInput("");
-    setLyInput("");
-    setBeamWidth("");
-    setSupportCond("interior");
-    setFfLoad("");
-    setLlLoad("");
-    setCover(20);
-    setBarDia(8);
-    setResults(null);
-    setEditableDepth("");
-    setEditableSx("");
+    resetForm();
   }, []);
-
-  const tableRatios = [1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 1.75, 2.0];
-
-  const table26Data: Record<string, number[][]> = {
-    interior: [
-      [0.024, 0.032, 0.024, 0.032],
-      [0.028, 0.037, 0.024, 0.032],
-      [0.032, 0.043, 0.024, 0.032],
-      [0.036, 0.047, 0.024, 0.032],
-      [0.039, 0.051, 0.024, 0.032],
-      [0.041, 0.053, 0.024, 0.032],
-      [0.045, 0.06, 0.024, 0.032],
-      [0.049, 0.065, 0.024, 0.032],
-    ],
-    one_short_discontinuous: [
-      [0.028, 0.037, 0.028, 0.037],
-      [0.032, 0.043, 0.028, 0.037],
-      [0.036, 0.048, 0.028, 0.037],
-      [0.039, 0.051, 0.028, 0.037],
-      [0.041, 0.055, 0.028, 0.037],
-      [0.044, 0.057, 0.028, 0.037],
-      [0.048, 0.064, 0.028, 0.037],
-      [0.052, 0.068, 0.028, 0.037],
-    ],
-    one_long_discontinuous: [
-      [0.028, 0.037, 0.028, 0.037],
-      [0.033, 0.044, 0.028, 0.037],
-      [0.039, 0.052, 0.028, 0.037],
-      [0.044, 0.057, 0.028, 0.037],
-      [0.047, 0.063, 0.028, 0.037],
-      [0.051, 0.067, 0.028, 0.037],
-      [0.059, 0.077, 0.028, 0.037],
-      [0.065, 0.085, 0.028, 0.037],
-    ],
-    two_adjacent_discontinuous: [
-      [0.035, 0.047, 0.035, 0.047],
-      [0.04, 0.053, 0.035, 0.047],
-      [0.045, 0.06, 0.035, 0.047],
-      [0.049, 0.065, 0.035, 0.047],
-      [0.053, 0.071, 0.035, 0.047],
-      [0.056, 0.075, 0.035, 0.047],
-      [0.063, 0.084, 0.035, 0.047],
-      [0.069, 0.091, 0.035, 0.047],
-    ],
-    two_short_discontinuous: [
-      [0.035, 0.045, 0.035, 0],
-      [0.037, 0.049, 0.035, 0],
-      [0.04, 0.052, 0.035, 0],
-      [0.043, 0.056, 0.035, 0],
-      [0.044, 0.059, 0.035, 0],
-      [0.045, 0.06, 0.035, 0],
-      [0.049, 0.065, 0.035, 0],
-      [0.052, 0.069, 0.035, 0],
-    ],
-    two_long_discontinuous: [
-      [0.035, 0, 0.035, 0.045],
-      [0.043, 0, 0.035, 0.045],
-      [0.051, 0, 0.035, 0.045],
-      [0.057, 0, 0.035, 0.045],
-      [0.063, 0, 0.035, 0.045],
-      [0.068, 0, 0.035, 0.045],
-      [0.08, 0, 0.035, 0.045],
-      [0.088, 0, 0.035, 0.045],
-    ],
-    three_discontinuous_one_long_continuous: [
-      [0.043, 0.057, 0.043, 0],
-      [0.048, 0.064, 0.043, 0],
-      [0.053, 0.071, 0.043, 0],
-      [0.057, 0.076, 0.043, 0],
-      [0.06, 0.08, 0.043, 0],
-      [0.064, 0.084, 0.043, 0],
-      [0.069, 0.091, 0.043, 0],
-      [0.073, 0.097, 0.043, 0],
-    ],
-    three_discontinuous_one_short_continuous: [
-      [0.043, 0, 0.043, 0.057],
-      [0.051, 0, 0.043, 0.057],
-      [0.059, 0, 0.043, 0.057],
-      [0.065, 0, 0.043, 0.057],
-      [0.071, 0, 0.043, 0.057],
-      [0.076, 0, 0.043, 0.057],
-      [0.087, 0, 0.043, 0.057],
-      [0.096, 0, 0.043, 0.057],
-    ],
-    four_edges_discontinuous: [
-      [0.056, 0, 0.056, 0],
-      [0.064, 0, 0.056, 0],
-      [0.072, 0, 0.056, 0],
-      [0.079, 0, 0.056, 0],
-      [0.085, 0, 0.056, 0],
-      [0.089, 0, 0.056, 0],
-      [0.1, 0, 0.056, 0],
-      [0.107, 0, 0.056, 0],
-    ],
-  };
-
-  const getDynamicCoefficients = (targetRatio: number, condition: string) => {
-    const dataset = table26Data[condition] || table26Data["interior"];
-    const r = Math.max(1.0, Math.min(2.0, targetRatio));
-
-    let lowerIdx = 0;
-    for (let i = 0; i < tableRatios.length - 1; i++) {
-      if (r >= tableRatios[i] && r <= tableRatios[i + 1]) {
-        lowerIdx = i;
-        break;
-      }
-    }
-
-    const upperIdx = Math.min(lowerIdx + 1, tableRatios.length - 1);
-    const r1 = tableRatios[lowerIdx];
-    const r2 = tableRatios[upperIdx];
-
-    if (r1 === r2) {
-      return {
-        alphaX: dataset[lowerIdx][0],
-        alphaX1: dataset[lowerIdx][1],
-        alphaY: dataset[lowerIdx][2],
-        alphaY1: dataset[lowerIdx][3],
-      };
-    }
-
-    const factor = (r - r1) / (r2 - r1);
-    const interpolate = (col: number) =>
-      dataset[lowerIdx][col] +
-      (dataset[upperIdx][col] - dataset[lowerIdx][col]) * factor;
-
-    return {
-      alphaX: Number(interpolate(0).toFixed(4)),
-      alphaX1: Number(interpolate(1).toFixed(4)),
-      alphaY: Number(interpolate(2).toFixed(4)),
-      alphaY1: Number(interpolate(3).toFixed(4)),
-    };
-  };
 
   const runAnalysis = (
     e?: React.FormEvent,
@@ -177,291 +39,62 @@ export default function SlabDesign() {
     customSx?: number,
   ) => {
     if (e) e.preventDefault();
-
-    const lxNum = Number(lxInput) || 0;
-    const lyNum = Number(lyInput) || 0;
-    const beamWNum = Number(beamWidth) || 0;
-    const ffNum = Number(ffLoad) || 0;
-    const llNum = Number(llLoad) || 0;
-
-    if (!lxNum || !lyNum || !beamWNum || !ffNum || !llNum) {
-      alert("Please enter the required inputs for analysis.");
-      return;
-    }
-
-    if (customDepth && customDepth <= cover + barDia) {
-      alert(
-        `Manual thickness must be strictly greater than cover + bar diameter (${cover + barDia} mm).`,
-      );
-      return;
-    }
-
-    const clearLx = lxNum * 1000;
-    const clearLy = lyNum * 1000;
-
-    let assumedD = customDepth || 100;
-    let finalResults: any = {};
-    const maxIterations = customDepth ? 1 : 100;
-
-    for (let i = 0; i < maxIterations; i++) {
-      const dx = assumedD - cover - barDia / 2;
-      const dy = assumedD - cover - barDia - barDia / 2;
-      const davg = (dx + dy) / 2;
-
-      const effLx = Math.min(clearLx + davg, clearLx + beamWNum);
-      const effLy = Math.min(clearLy + davg, clearLy + beamWNum);
-
-      const ratio = effLy / effLx;
-      const isTwoWay = ratio <= 2.0;
-
-      const coeffs = getDynamicCoefficients(ratio, supportCond);
-
-      const selfWeight = (assumedD / 1000) * 25;
-      const totalDL = selfWeight + ffNum;
-      const totalW = totalDL + llNum;
-      const factoredW = totalW * 1.5;
-
-      const Mtx = coeffs.alphaX * factoredW * Math.pow(effLx / 1000, 2);
-      const Mtx1 = coeffs.alphaX1 * factoredW * Math.pow(effLx / 1000, 2);
-      const Mty = coeffs.alphaY * factoredW * Math.pow(effLx / 1000, 2);
-      const Mty1 = coeffs.alphaY1 * factoredW * Math.pow(effLx / 1000, 2);
-      const maxM = Math.max(Mtx, Mtx1, Mty, Mty1);
-
-      let rMaxFactor = 0.138;
-      if (fy === 500) rMaxFactor = 0.133;
-      if (fy === 550) rMaxFactor = 0.13;
-
-      const Rmax = rMaxFactor * fck;
-      const dReq = Math.sqrt((maxM * 1000000) / (Rmax * 1000));
-
-      const calcPt = (M: number, d: number) => {
-        if (M === 0) return 0;
-        const momentInNmm = M * 1000000;
-        const innerTerm = 1 - (4.6 * momentInNmm) / (fck * 1000 * d * d);
-        if (innerTerm < 0) return null;
-        return ((50 * fck) / fy) * (1 - Math.sqrt(innerTerm));
-      };
-
-      const Ptx = calcPt(Mtx, davg);
-      const Ptx1 = calcPt(Mtx1, davg);
-      const Pty = calcPt(Mty, davg);
-      const Pty1 = calcPt(Mty1, davg);
-
-      if (
-        !customDepth &&
-        (Ptx === null || Ptx1 === null || Pty === null || Pty1 === null)
-      ) {
-        assumedD += 5;
-        continue;
-      }
-
-      const safePtx = Ptx ?? 0;
-      const safePtx1 = Ptx1 ?? 0;
-      const safePty = Pty ?? 0;
-      const safePty1 = Pty1 ?? 0;
-
-      // IS 456 Clause 26.5.2.1 warning formatter with whitespace-nowrap trick
-      const formatRequiredPt = (pt: number) => {
-        if (pt === 0) return "0.000 %";
-        if (pt < 0.12) {
-          return (
-            <span className="flex items-center whitespace-nowrap">
-              {pt.toFixed(3)} %
-              <span className="text-red-500 ml-2 text-xs font-medium">
-                (minimum 0.12% as per IS 456:2000 Clause 26.5.2.1)
-              </span>
-            </span>
-          );
-        }
-        return `${pt.toFixed(3)} %`;
-      };
-
-      const astBar = (Math.PI / 4) * barDia * barDia;
-
-      // Removed the Math.min(..., 300) cap so it accurately shows the exact theoretical value required
-      const calcExactSpacing = (Pt: number, d: number) => {
-        if (Pt === 0) return 0;
-        const AstReq = (Pt / 100) * 1000 * d;
-        return (astBar / AstReq) * 1000;
-      };
-
-      const sxReqExact = calcExactSpacing(safePtx, davg);
-      const sx1ReqExact = calcExactSpacing(safePtx1, davg);
-      const syReqExact = calcExactSpacing(safePty, davg);
-      const sy1ReqExact = calcExactSpacing(safePty1, davg);
-
-      // Kept the strict IS 456 limits ONLY for Spacing Provided
-      const capAndRoundSpacingDown = (val: number, d: number) => {
-        if (val <= 0) return 0;
-        const maxAllowed = Math.min(3 * d, 300);
-        return Math.floor(Math.min(val, maxAllowed) / 5) * 5;
-      };
-
-      const sxProvAuto = capAndRoundSpacingDown(sxReqExact, davg);
-
-      if (customSx) {
-        if (customSx <= 0) {
-          alert("Manual spacing must be greater than 0 mm.");
-          return;
-        }
-        if (customSx > sxProvAuto) {
-          alert(
-            `Error: Manual spacing (${customSx} mm) cannot exceed the safe calculated maximum of ${sxProvAuto} mm. Please enter a smaller value to provide more steel.`,
-          );
-          return;
-        }
-      }
-
-      const sxProv = customSx || sxProvAuto;
-      const sx1Prov = capAndRoundSpacingDown(sx1ReqExact, davg);
-      const syProv = capAndRoundSpacingDown(syReqExact, davg);
-      const sy1Prov = capAndRoundSpacingDown(sy1ReqExact, davg);
-
-      const astReqX = (safePtx / 100) * 1000 * dx;
-
-      const astProvX = sxProv > 0 ? (astBar / sxProv) * 1000 : 0;
-      const astProvX1 = sx1Prov > 0 ? (astBar / sx1Prov) * 1000 : 0;
-      const astProvY = syProv > 0 ? (astBar / syProv) * 1000 : 0;
-      const astProvY1 = sy1Prov > 0 ? (astBar / sy1Prov) * 1000 : 0;
-
-      const PtxProv = astProvX > 0 ? (astProvX / (1000 * dx)) * 100 : 0;
-      const Ptx1Prov = astProvX1 > 0 ? (astProvX1 / (1000 * dx)) * 100 : 0;
-      const PtyProv = astProvY > 0 ? (astProvY / (1000 * dy)) * 100 : 0;
-      const Pty1Prov = astProvY1 > 0 ? (astProvY1 / (1000 * dy)) * 100 : 0;
-
-      const fs = astProvX > 0 ? 0.58 * fy * (astReqX / astProvX) : 0;
-
-      let basicLd = 26;
-      if (
-        [
-          "interior",
-          "one_short_discontinuous",
-          "two_short_discontinuous",
-        ].includes(supportCond)
-      ) {
-        basicLd = 26;
-      } else if (
-        [
-          "one_long_discontinuous",
-          "two_adjacent_discontinuous",
-          "three_discontinuous_one_long_continuous",
-        ].includes(supportCond)
-      ) {
-        basicLd = 23;
-      } else if (
-        [
-          "two_long_discontinuous",
-          "three_discontinuous_one_short_continuous",
-          "four_edges_discontinuous",
-        ].includes(supportCond)
-      ) {
-        basicLd = 20;
-      }
-
-      let modFactor = 1.9;
-      if (PtxProv > 0) {
-        const calculatedModFactor =
-          1 / (0.225 + 0.00328 * fs + 0.625 * Math.log10(PtxProv));
-        const cappedModFactor = Math.min(
-          Math.max(calculatedModFactor, 0.5),
-          2.0,
-        );
-        modFactor = Math.floor(cappedModFactor * 10) / 10;
-      }
-
-      const allowedLd = basicLd * modFactor;
-      const actualLd = effLx / davg;
-
-      const isDepthAdequate = dReq < davg && safePtx > 0;
-      const isDeflectionSafe = actualLd <= allowedLd;
-
-      let adequacyComment = "";
-      if (customDepth) {
-        adequacyComment =
-          safePtx === 0
-            ? "Fails - Moment exceeds section capacity"
-            : isDepthAdequate
-              ? `Safe (manual ${assumedD} mm thickness is adequate)`
-              : "Unsafe - Depth inadequate";
-      } else {
-        adequacyComment = isDepthAdequate
-          ? `Safe (auto-optimized to ${assumedD} mm)`
-          : "Unsafe - Increase Depth";
-      }
-
-      let deflectionCheck = "";
-      if (safePtx === 0) {
-        deflectionCheck = "Fails - Section too thin";
-      } else {
-        deflectionCheck = isDeflectionSafe
-          ? "Safe against excessive deflection"
-          : "Fails deflection criteria";
-      }
-
-      finalResults = {
-        effLx,
-        effLy,
-        ratio: ratio.toFixed(2),
-        panelType: isTwoWay ? "Two Way" : "One Way",
+    try {
+      const res = executeSlabAnalysis({
+        fck,
+        fy,
+        lxInput,
+        lyInput,
+        beamWidth,
         supportCond,
-        assumedD,
-        dx,
-        dy,
-        davg: davg.toFixed(2),
-        DL: totalDL.toFixed(2),
-        LL: llNum.toFixed(2),
-        totalW: totalW.toFixed(2),
-        alphaX: coeffs.alphaX,
-        alphaX1: coeffs.alphaX1,
-        alphaY: coeffs.alphaY,
-        alphaY1: coeffs.alphaY1,
-        Mtx: Mtx.toFixed(3),
-        Mtx1: Mtx1.toFixed(3),
-        Mty: Mty.toFixed(3),
-        Mty1: Mty1.toFixed(3),
-        dReq: dReq.toFixed(2),
-        adequacyComment,
-        MtxBd: ((Mtx * 1000000) / (1000 * davg * davg)).toFixed(3),
-        Mtx1Bd: ((Mtx1 * 1000000) / (1000 * davg * davg)).toFixed(3),
-        MtyBd: ((Mty * 1000000) / (1000 * davg * davg)).toFixed(3),
-        Mty1Bd: ((Mty1 * 1000000) / (1000 * davg * davg)).toFixed(3),
-
-        PtxStr: formatRequiredPt(safePtx),
-        Ptx1Str: formatRequiredPt(safePtx1),
-        PtyStr: formatRequiredPt(safePty),
-        Pty1Str: formatRequiredPt(safePty1),
-
-        sxReq: sxReqExact > 0 ? sxReqExact.toFixed(2) : "-",
-        sx1Req: sx1ReqExact > 0 ? sx1ReqExact.toFixed(2) : "-",
-        syReq: syReqExact > 0 ? syReqExact.toFixed(2) : "-",
-        sy1Req: sy1ReqExact > 0 ? sy1ReqExact.toFixed(2) : "-",
-        sxProv: sxProv > 0 ? sxProv : "-",
-        sx1Prov: sx1Prov > 0 ? sx1Prov : "-",
-        syProv: syProv > 0 ? syProv : "-",
-        sy1Prov: sy1Prov > 0 ? sy1Prov : "-",
-        PtxProv: PtxProv.toFixed(3),
-        Ptx1Prov: Ptx1Prov.toFixed(3),
-        PtyProv: PtyProv.toFixed(3),
-        Pty1Prov: Pty1Prov.toFixed(3),
-        dxDavg: (dx / davg).toFixed(2),
-        actualLd: actualLd.toFixed(2),
-        basicLd,
-        astRatio: astProvX > 0 ? (astReqX / astProvX).toFixed(3) : "N/A",
-        fs: fs.toFixed(2),
-        modFactor: modFactor.toFixed(1),
-        allowedLd: allowedLd.toFixed(2),
-        deflectionCheck,
-      };
-
-      if (customDepth) break;
-      if (isDepthAdequate && isDeflectionSafe) break;
-
-      assumedD += 5;
+        ffLoad,
+        llLoad,
+        cover,
+        barDia,
+        customDepth,
+        customSx,
+      });
+      setResults(res);
+      setEditableDepth(res.assumedD);
+      setEditableSx(res.sxProv !== "-" ? res.sxProv : "");
+      setSaveStatus("");
+    } catch (err: any) {
+      alert(err.message);
     }
+  };
 
-    setResults(finalResults);
-    setEditableDepth(finalResults.assumedD);
-    setEditableSx(finalResults.sxProv !== "-" ? finalResults.sxProv : "");
+  const handleSave = async () => {
+    if (!results) return;
+    setSaveStatus("Saving...");
+
+    const inputs = {
+      fck,
+      fy,
+      lxInput,
+      lyInput,
+      beamWidth,
+      supportCond,
+      ffLoad,
+      llLoad,
+      cover,
+      barDia,
+    };
+    const res = await saveCalculationHistory(
+      "Slab",
+      title || "Untitled Slab",
+      inputs,
+      results,
+    );
+
+    if (res?.error === "Unauthorized") {
+      setSaveStatus("");
+      setIsAuthModalOpen(true);
+    } else if (res?.success) {
+      setSaveStatus("Calculation saved successfully!");
+      setTimeout(() => setSaveStatus(""), 4000);
+    } else {
+      setSaveStatus("An error occurred while saving.");
+    }
   };
 
   const resetForm = () => {
@@ -478,12 +111,29 @@ export default function SlabDesign() {
     setResults(null);
     setEditableDepth("");
     setEditableSx("");
+    setTitle("");
+    setSaveStatus("");
+  };
+
+  const formatPt = (pt: number) => {
+    if (pt === 0) return "0.000 %";
+    if (pt < 0.12) {
+      return (
+        <span className="flex items-center whitespace-nowrap">
+          {pt.toFixed(3)} %
+          <span className="text-red-500 ml-2 text-xs font-medium">
+            (minimum 0.12% as per IS 456:2000)
+          </span>
+        </span>
+      );
+    }
+    return `${pt.toFixed(3)} %`;
   };
 
   return (
     <div className="min-h-screen bg-white selection:bg-blue-100 flex flex-col">
       <Navbar />
-      <main className="flex-1 flex flex-col items-center w-full pt-12 pb-24 bg-white">
+      <main className="flex-1 flex flex-col items-center w-full pt-12 pb-24 bg-white relative">
         <div className="max-w-4xl mx-auto px-8 w-full mb-10 flex justify-between items-start">
           <div>
             <Link
@@ -501,7 +151,6 @@ export default function SlabDesign() {
               slab design and detailing report.
             </p>
           </div>
-
           <button
             onClick={resetForm}
             className="hidden md:flex items-center text-sm font-medium text-slate-500 hover:text-slate-900 transition-colors mt-8"
@@ -517,7 +166,6 @@ export default function SlabDesign() {
             autoComplete="off"
             className="bg-slate-50 p-8 rounded-2xl border border-slate-200 shadow-sm space-y-10"
           >
-            {/* 1. Material Properties */}
             <div>
               <h2 className="text-xl font-bold text-slate-900 mb-5 border-b border-slate-200 pb-2">
                 1. Material Properties
@@ -530,7 +178,7 @@ export default function SlabDesign() {
                   <select
                     value={fck}
                     onChange={(e) => setFck(Number(e.target.value))}
-                    className="w-full px-4 py-3 rounded-lg border border-slate-200 focus:outline-none focus:ring-2 focus:ring-[#1d64d8] bg-white"
+                    className="w-full px-4 py-3 rounded-lg border border-slate-200 bg-white"
                   >
                     <option value="20">M20</option>
                     <option value="25">M25</option>
@@ -545,7 +193,7 @@ export default function SlabDesign() {
                   <select
                     value={fy}
                     onChange={(e) => setFy(Number(e.target.value))}
-                    className="w-full px-4 py-3 rounded-lg border border-slate-200 focus:outline-none focus:ring-2 focus:ring-[#1d64d8] bg-white"
+                    className="w-full px-4 py-3 rounded-lg border border-slate-200 bg-white"
                   >
                     <option value="415">Fe415</option>
                     <option value="500">Fe500</option>
@@ -555,7 +203,6 @@ export default function SlabDesign() {
               </div>
             </div>
 
-            {/* 2. Span & Continuity */}
             <div>
               <h2 className="text-xl font-bold text-slate-900 mb-5 border-b border-slate-200 pb-2">
                 2. Span & Continuity
@@ -570,7 +217,7 @@ export default function SlabDesign() {
                     step="0.01"
                     value={lxInput}
                     onChange={(e) => setLxInput(e.target.value)}
-                    className="w-full px-4 py-3 rounded-lg border border-slate-200 focus:outline-none focus:ring-2 focus:ring-[#1d64d8] bg-white"
+                    className="w-full px-4 py-3 rounded-lg border border-slate-200 bg-white"
                     placeholder="e.g., 4.5"
                   />
                 </div>
@@ -583,7 +230,7 @@ export default function SlabDesign() {
                     step="0.01"
                     value={lyInput}
                     onChange={(e) => setLyInput(e.target.value)}
-                    className="w-full px-4 py-3 rounded-lg border border-slate-200 focus:outline-none focus:ring-2 focus:ring-[#1d64d8] bg-white"
+                    className="w-full px-4 py-3 rounded-lg border border-slate-200 bg-white"
                     placeholder="e.g., 6.0"
                   />
                 </div>
@@ -595,7 +242,7 @@ export default function SlabDesign() {
                     type="number"
                     value={beamWidth}
                     onChange={(e) => setBeamWidth(e.target.value)}
-                    className="w-full px-4 py-3 rounded-lg border border-slate-200 focus:outline-none focus:ring-2 focus:ring-[#1d64d8] bg-white"
+                    className="w-full px-4 py-3 rounded-lg border border-slate-200 bg-white"
                     placeholder="e.g., 230"
                   />
                 </div>
@@ -607,7 +254,7 @@ export default function SlabDesign() {
                 <select
                   value={supportCond}
                   onChange={(e) => setSupportCond(e.target.value)}
-                  className="w-full px-4 py-3 rounded-lg border border-slate-200 focus:outline-none focus:ring-2 focus:ring-[#1d64d8] bg-white"
+                  className="w-full px-4 py-3 rounded-lg border border-slate-200 bg-white"
                 >
                   <option value="interior">Case 1: Interior Panel</option>
                   <option value="one_short_discontinuous">
@@ -639,7 +286,6 @@ export default function SlabDesign() {
               </div>
             </div>
 
-            {/* 3. Loading Parameters */}
             <div>
               <h2 className="text-xl font-bold text-slate-900 mb-5 border-b border-slate-200 pb-2">
                 3. Loading (kN/m²)
@@ -654,7 +300,7 @@ export default function SlabDesign() {
                     step="0.1"
                     value={ffLoad}
                     onChange={(e) => setFfLoad(e.target.value)}
-                    className="w-full px-4 py-3 rounded-lg border border-slate-200 focus:outline-none focus:ring-2 focus:ring-[#1d64d8] bg-white"
+                    className="w-full px-4 py-3 rounded-lg border border-slate-200 bg-white"
                     placeholder="e.g., 1.5"
                   />
                 </div>
@@ -667,14 +313,13 @@ export default function SlabDesign() {
                     step="0.1"
                     value={llLoad}
                     onChange={(e) => setLlLoad(e.target.value)}
-                    className="w-full px-4 py-3 rounded-lg border border-slate-200 focus:outline-none focus:ring-2 focus:ring-[#1d64d8] bg-white"
+                    className="w-full px-4 py-3 rounded-lg border border-slate-200 bg-white"
                     placeholder="e.g., 3.0"
                   />
                 </div>
               </div>
             </div>
 
-            {/* 4. Durability & Detailing */}
             <div>
               <h2 className="text-xl font-bold text-slate-900 mb-5 border-b border-slate-200 pb-2">
                 4. Durability & Detailing
@@ -687,7 +332,7 @@ export default function SlabDesign() {
                   <select
                     value={cover}
                     onChange={(e) => setCover(Number(e.target.value))}
-                    className="w-full px-4 py-3 rounded-lg border border-slate-200 focus:outline-none focus:ring-2 focus:ring-[#1d64d8] bg-white"
+                    className="w-full px-4 py-3 rounded-lg border border-slate-200 bg-white"
                   >
                     <option value="20">Mild (20 mm)</option>
                     <option value="30">Moderate (30 mm)</option>
@@ -703,7 +348,7 @@ export default function SlabDesign() {
                   <select
                     value={barDia}
                     onChange={(e) => setBarDia(Number(e.target.value))}
-                    className="w-full px-4 py-3 rounded-lg border border-slate-200 focus:outline-none focus:ring-2 focus:ring-[#1d64d8] bg-white"
+                    className="w-full px-4 py-3 rounded-lg border border-slate-200 bg-white"
                   >
                     <option value="8">8 mm</option>
                     <option value="10">10 mm</option>
@@ -725,13 +370,12 @@ export default function SlabDesign() {
             </div>
           </form>
 
-          {/* --- DYNAMIC RESULTS OUTPUT TABLE --- */}
           {results && (
             <div className="mt-16 animate-in fade-in slide-in-from-bottom-4 duration-500">
               <h2 className="text-2xl font-bold text-slate-900 mb-6">
                 Slab Calculation Output Table
               </h2>
-              <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+              <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden mb-6">
                 <table className="w-full text-left border-collapse">
                   <thead>
                     <tr className="bg-[#1d64d8] text-white">
@@ -744,7 +388,6 @@ export default function SlabDesign() {
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-100 text-slate-700 text-sm">
-                    {/* Geometry */}
                     <tr>
                       <td className="px-6 py-3 font-medium">
                         Shorter span Length (Lx)
@@ -782,7 +425,6 @@ export default function SlabDesign() {
                       </td>
                     </tr>
 
-                    {/* EDITABLE THICKNESS ROW */}
                     <tr className="bg-blue-50/50">
                       <td className="px-6 py-3 font-bold text-slate-900">
                         Overall thickness assumed
@@ -795,7 +437,7 @@ export default function SlabDesign() {
                               step="5"
                               value={editableDepth}
                               onChange={(e) => setEditableDepth(e.target.value)}
-                              className="w-24 px-3 py-1.5 rounded border border-slate-300 focus:outline-none focus:ring-2 focus:ring-[#1d64d8] bg-white font-bold text-[#1d64d8]"
+                              className="w-24 px-3 py-1.5 rounded border border-slate-300 bg-white font-bold text-[#1d64d8]"
                             />
                             <span className="text-slate-600 font-medium ml-2">
                               mm
@@ -809,22 +451,19 @@ export default function SlabDesign() {
                                 Number(editableSx),
                               )
                             }
-                            className="bg-slate-800 text-white px-3 py-1.5 rounded text-xs font-semibold hover:bg-slate-700 transition-colors shadow-sm"
+                            className="bg-slate-800 text-white px-3 py-1.5 rounded text-xs font-semibold hover:bg-slate-700 transition-colors"
                           >
                             Recalculate using manual thickness
                           </button>
                         </div>
                       </td>
                     </tr>
-
                     <tr>
                       <td className="px-6 py-3 font-medium">dx, dy, davg</td>
                       <td className="px-6 py-3 border-l border-slate-100">
                         {results.dx}, {results.dy}, {results.davg} mm
                       </td>
                     </tr>
-
-                    {/* Loading */}
                     <tr>
                       <td className="px-6 py-3 font-medium">
                         Intensity of DL(W)
@@ -848,7 +487,6 @@ export default function SlabDesign() {
                       </td>
                     </tr>
 
-                    {/* Coefficients */}
                     <tr className="bg-slate-50">
                       <td
                         colSpan={2}
@@ -886,7 +524,6 @@ export default function SlabDesign() {
                       </td>
                     </tr>
 
-                    {/* Factored B.M. */}
                     <tr className="bg-slate-50">
                       <td
                         colSpan={2}
@@ -922,7 +559,6 @@ export default function SlabDesign() {
                       </td>
                     </tr>
 
-                    {/* Adequacy */}
                     <tr className="bg-slate-50">
                       <td
                         colSpan={2}
@@ -950,41 +586,6 @@ export default function SlabDesign() {
                       </td>
                     </tr>
 
-                    {/* Mt/bd^2 */}
-                    <tr className="bg-slate-50">
-                      <td
-                        colSpan={2}
-                        className="px-6 py-2 font-semibold text-slate-900 border-y border-slate-200"
-                      >
-                        Mt/bd² Per m width of slab b=1000
-                      </td>
-                    </tr>
-                    <tr>
-                      <td className="px-6 py-3 font-medium">Mtx/bd²</td>
-                      <td className="px-6 py-3 border-l border-slate-100">
-                        {results.MtxBd}
-                      </td>
-                    </tr>
-                    <tr>
-                      <td className="px-6 py-3 font-medium">Mtx1/bd²</td>
-                      <td className="px-6 py-3 border-l border-slate-100">
-                        {results.Mtx1Bd}
-                      </td>
-                    </tr>
-                    <tr>
-                      <td className="px-6 py-3 font-medium">Mty/bd²</td>
-                      <td className="px-6 py-3 border-l border-slate-100">
-                        {results.MtyBd}
-                      </td>
-                    </tr>
-                    <tr>
-                      <td className="px-6 py-3 font-medium">Mty1/bd²</td>
-                      <td className="px-6 py-3 border-l border-slate-100">
-                        {results.Mty1Bd}
-                      </td>
-                    </tr>
-
-                    {/* Percentage of Steel Required */}
                     <tr className="bg-slate-50">
                       <td
                         colSpan={2}
@@ -996,63 +597,28 @@ export default function SlabDesign() {
                     <tr>
                       <td className="px-6 py-3 font-medium">Ptx (reqd)</td>
                       <td className="px-6 py-3 border-l border-slate-100">
-                        {results.PtxStr}
+                        {formatPt(results.PtxVal)}
                       </td>
                     </tr>
                     <tr>
                       <td className="px-6 py-3 font-medium">Ptx1 (reqd)</td>
                       <td className="px-6 py-3 border-l border-slate-100">
-                        {results.Ptx1Str}
+                        {formatPt(results.Ptx1Val)}
                       </td>
                     </tr>
                     <tr>
                       <td className="px-6 py-3 font-medium">Pty (reqd)</td>
                       <td className="px-6 py-3 border-l border-slate-100">
-                        {results.PtyStr}
+                        {formatPt(results.PtyVal)}
                       </td>
                     </tr>
                     <tr>
                       <td className="px-6 py-3 font-medium">Pty1 (reqd)</td>
                       <td className="px-6 py-3 border-l border-slate-100">
-                        {results.Pty1Str}
+                        {formatPt(results.Pty1Val)}
                       </td>
                     </tr>
 
-                    {/* Spacing Required (Exact Calculation) */}
-                    <tr className="bg-slate-50">
-                      <td
-                        colSpan={2}
-                        className="px-6 py-2 font-semibold text-slate-900 border-y border-slate-200"
-                      >
-                        Spacing Required (for 8mm dia bar)
-                      </td>
-                    </tr>
-                    <tr>
-                      <td className="px-6 py-3 font-medium">Sx (reqd) mm</td>
-                      <td className="px-6 py-3 border-l border-slate-100">
-                        {results.sxReq}
-                      </td>
-                    </tr>
-                    <tr>
-                      <td className="px-6 py-3 font-medium">Sx1 (reqd)</td>
-                      <td className="px-6 py-3 border-l border-slate-100">
-                        {results.sx1Req}
-                      </td>
-                    </tr>
-                    <tr>
-                      <td className="px-6 py-3 font-medium">Sy (reqd)</td>
-                      <td className="px-6 py-3 border-l border-slate-100">
-                        {results.syReq}
-                      </td>
-                    </tr>
-                    <tr>
-                      <td className="px-6 py-3 font-medium">Sy1 (reqd)</td>
-                      <td className="px-6 py-3 border-l border-slate-100">
-                        {results.sy1Req}
-                      </td>
-                    </tr>
-
-                    {/* EDITABLE SPACING PROVIDED ROW */}
                     <tr className="bg-slate-50">
                       <td
                         colSpan={2}
@@ -1073,7 +639,7 @@ export default function SlabDesign() {
                               step="5"
                               value={editableSx}
                               onChange={(e) => setEditableSx(e.target.value)}
-                              className="w-24 px-3 py-1.5 rounded border border-slate-300 focus:outline-none focus:ring-2 focus:ring-[#1d64d8] bg-white font-bold text-[#1d64d8]"
+                              className="w-24 px-3 py-1.5 rounded border border-slate-300 bg-white font-bold text-[#1d64d8]"
                             />
                             <span className="text-slate-600 font-medium ml-2">
                               mm
@@ -1087,7 +653,7 @@ export default function SlabDesign() {
                                 Number(editableSx),
                               )
                             }
-                            className="bg-slate-800 text-white px-3 py-1.5 rounded text-xs font-semibold hover:bg-slate-700 transition-colors shadow-sm"
+                            className="bg-slate-800 text-white px-3 py-1.5 rounded text-xs font-semibold hover:bg-slate-700"
                           >
                             Recalculate with manual Sx
                           </button>
@@ -1112,122 +678,46 @@ export default function SlabDesign() {
                         {results.sy1Prov}
                       </td>
                     </tr>
-
-                    {/* % Ast Provided */}
-                    <tr className="bg-slate-50">
-                      <td
-                        colSpan={2}
-                        className="px-6 py-2 font-semibold text-slate-900 border-y border-slate-200"
-                      >
-                        % Ast Provided
-                      </td>
-                    </tr>
-                    <tr>
-                      <td className="px-6 py-3 font-medium">Ptx (Prov)</td>
-                      <td className="px-6 py-3 border-l border-slate-100">
-                        {results.PtxProv} %
-                      </td>
-                    </tr>
-                    <tr>
-                      <td className="px-6 py-3 font-medium">Ptx1 (Prov)</td>
-                      <td className="px-6 py-3 border-l border-slate-100">
-                        {results.Ptx1Prov} %
-                      </td>
-                    </tr>
-                    <tr>
-                      <td className="px-6 py-3 font-medium">Pty (Prov)</td>
-                      <td className="px-6 py-3 border-l border-slate-100">
-                        {results.PtyProv} %
-                      </td>
-                    </tr>
-                    <tr>
-                      <td className="px-6 py-3 font-medium">Pty1 (Prov)</td>
-                      <td className="px-6 py-3 border-l border-slate-100">
-                        {results.Pty1Prov} %
-                      </td>
-                    </tr>
-
-                    {/* Deflection */}
-                    <tr className="bg-slate-50">
-                      <td
-                        colSpan={2}
-                        className="px-6 py-2 font-semibold text-slate-900 border-y border-slate-200"
-                      >
-                        Check for Deflection
-                      </td>
-                    </tr>
-                    <tr>
-                      <td className="px-6 py-3 font-medium">dx/davg (Prov)</td>
-                      <td className="px-6 py-3 border-l border-slate-100">
-                        {results.dxDavg}
-                      </td>
-                    </tr>
-                    <tr>
-                      <td className="px-6 py-3 font-medium">Lx/d (basic)</td>
-                      <td className="px-6 py-3 border-l border-slate-100">
-                        {results.basicLd}
-                      </td>
-                    </tr>
-                    <tr>
-                      <td className="px-6 py-3 font-medium">
-                        Ast_x(reqd) / Ast_x(prov)
-                      </td>
-                      <td className="px-6 py-3 border-l border-slate-100">
-                        {results.astRatio}
-                      </td>
-                    </tr>
-                    <tr>
-                      <td className="px-6 py-3 font-medium">fs =</td>
-                      <td className="px-6 py-3 border-l border-slate-100">
-                        {results.fs}
-                      </td>
-                    </tr>
-                    <tr>
-                      <td className="px-6 py-3 font-medium">
-                        modification factor from fig. 4
-                      </td>
-                      <td className="px-6 py-3 border-l border-slate-100">
-                        {results.modFactor}
-                      </td>
-                    </tr>
-                    <tr>
-                      <td className="px-6 py-3 font-medium">(Lx/d) allowed</td>
-                      <td className="px-6 py-3 border-l border-slate-100">
-                        {results.allowedLd}
-                      </td>
-                    </tr>
-                    <tr>
-                      <td className="px-6 py-3 font-medium">(Lx/d) provided</td>
-                      <td className="px-6 py-3 border-l border-slate-100">
-                        {results.actualLd}
-                      </td>
-                    </tr>
-
-                    <tr className="bg-slate-50">
-                      <td
-                        colSpan={2}
-                        className="px-6 py-2 font-semibold text-slate-900 border-y border-slate-200"
-                      >
-                        Remark & Deflection Check
-                      </td>
-                    </tr>
-                    <tr>
-                      <td className="px-6 py-3 font-bold text-slate-900">
-                        Overall remarks
-                      </td>
-                      <td
-                        className={`px-6 py-3 border-l border-slate-100 font-bold ${results.deflectionCheck.includes("Safe") ? "text-green-600" : "text-red-600"}`}
-                      >
-                        {results.deflectionCheck}
-                      </td>
-                    </tr>
                   </tbody>
                 </table>
               </div>
+
+              <div className="bg-slate-50 p-6 rounded-2xl border border-slate-200 shadow-sm flex flex-col md:flex-row gap-4 items-center">
+                <input
+                  type="text"
+                  placeholder="Project Name (e.g., Ground Floor Master Bedroom)"
+                  value={title}
+                  onChange={(e) => setTitle(e.target.value)}
+                  className="flex-1 px-4 py-3 rounded-lg border border-slate-200 bg-white w-full"
+                />
+                <button
+                  onClick={handleSave}
+                  className="bg-slate-900 text-white px-8 py-3 rounded-lg font-bold hover:bg-slate-800 transition-colors shadow-sm flex justify-center items-center gap-2 w-full md:w-auto whitespace-nowrap"
+                >
+                  <Save className="w-5 h-5" />
+                  Save Design
+                </button>
+              </div>
+              {saveStatus && (
+                <p
+                  className={`mt-3 text-sm font-semibold text-center ${saveStatus.includes("success") ? "text-green-600" : saveStatus.includes("Saving") ? "text-slate-600" : "text-red-600"}`}
+                >
+                  {saveStatus}
+                </p>
+              )}
             </div>
           )}
         </div>
       </main>
+
+      <AuthModal
+        isOpen={isAuthModalOpen}
+        onClose={() => setIsAuthModalOpen(false)}
+        onSuccess={() => {
+          setIsAuthModalOpen(false);
+          handleSave();
+        }}
+      />
       <Footer />
     </div>
   );

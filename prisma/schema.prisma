@@ -1,0 +1,32 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String               @id @default(uuid())
+  name      String?
+  email     String               @unique
+  password  String
+  history   CalculationHistory[] 
+  createdAt DateTime             @default(now())
+  updatedAt DateTime             @updatedAt
+}
+
+model CalculationHistory {
+  id          String   @id @default(uuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  moduleType  String   // e.g., "Slab", "Beam"
+  title       String   // User's custom save name
+  inputs      Json     // The raw inputs (lx, ly, fck, etc.)
+  results     Json     // The final calculated output
+  createdAt   DateTime @default(now())
+
+  // Ensure titles are unique per user to prevent duplicates
+  @@unique([userId, title])
+}

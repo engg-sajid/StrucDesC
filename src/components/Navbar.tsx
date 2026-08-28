@@ -5,11 +5,13 @@ import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Menu, X } from "lucide-react";
+import AuthModal from "@/components/AuthModal";
 
 export default function Navbar() {
   const pathname = usePathname();
-  // State to control the mobile sidebar
+  // State to control the mobile sidebar and auth modal
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
 
   const getLinkClass = (path: string) => {
     return `transition-colors hover:text-blue-600 ${
@@ -17,13 +19,12 @@ export default function Navbar() {
     }`;
   };
 
-  // Helper function to close the menu when a link is clicked
   const closeMenu = () => setIsMobileMenuOpen(false);
 
   return (
     <nav className="flex items-center justify-between px-8 py-6 max-w-screen-2xl mx-auto w-full bg-white relative">
       {/* Brand / Logo Section */}
-      <Link href="/" className="flex items-center  z-50">
+      <Link href="/" className="flex items-center z-50">
         <Image
           src="/logo.png"
           alt="StrucDesC Logo"
@@ -54,8 +55,11 @@ export default function Navbar() {
 
       {/* Desktop Action Button */}
       <div className="hidden md:block">
-        <button className="bg-[#1d64d8] text-white px-6 py-2.5 rounded-md font-medium hover:bg-blue-700 transition-colors">
-          Sign up
+        <button
+          onClick={() => setIsAuthModalOpen(true)}
+          className="bg-[#1d64d8] text-white px-6 py-2.5 rounded-md font-medium hover:bg-blue-700 transition-colors"
+        >
+          Sign In
         </button>
       </div>
 
@@ -68,8 +72,6 @@ export default function Navbar() {
       </button>
 
       {/* --- Mobile Sidebar Overlay & Menu --- */}
-
-      {/* Darkened Backdrop (clicks outside the menu close it) */}
       {isMobileMenuOpen && (
         <div
           className="fixed inset-0 bg-slate-900/20 backdrop-blur-sm z-40 md:hidden"
@@ -79,7 +81,9 @@ export default function Navbar() {
 
       {/* Slide-out Sidebar */}
       <div
-        className={`fixed top-0 right-0 h-full w-64 bg-white shadow-2xl z-50 transform transition-transform duration-300 ease-in-out md:hidden flex flex-col p-8 ${isMobileMenuOpen ? "translate-x-0" : "translate-x-full"}`}
+        className={`fixed top-0 right-0 h-full w-64 bg-white shadow-2xl z-50 transform transition-transform duration-300 ease-in-out md:hidden flex flex-col p-8 ${
+          isMobileMenuOpen ? "translate-x-0" : "translate-x-full"
+        }`}
       >
         {/* Close Button */}
         <div className="flex justify-end mb-8">
@@ -119,12 +123,25 @@ export default function Navbar() {
           </Link>
 
           <div className="mt-4 pt-6 border-t border-slate-100">
-            <button className="w-full bg-[#1d64d8] text-white px-6 py-3.5 rounded-md font-medium text-lg hover:bg-blue-700 transition-colors shadow-sm">
-              Sign up
+            <button
+              onClick={() => {
+                closeMenu();
+                setIsAuthModalOpen(true);
+              }}
+              className="w-full bg-[#1d64d8] text-white px-6 py-3.5 rounded-md font-medium text-lg hover:bg-blue-700 transition-colors shadow-sm"
+            >
+              Sign In
             </button>
           </div>
         </div>
       </div>
+
+      {/* Auth Modal Integration */}
+      <AuthModal
+        isOpen={isAuthModalOpen}
+        onClose={() => setIsAuthModalOpen(false)}
+        onSuccess={() => setIsAuthModalOpen(false)}
+      />
     </nav>
   );
 }
