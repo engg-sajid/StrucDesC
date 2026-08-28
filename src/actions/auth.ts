@@ -18,8 +18,7 @@ export async function registerUser(formData: FormData) {
   });
 
   const session = await encrypt({ userId: user.id, email: user.email });
-  
-  const cookieStore = await cookies(); // Added await here
+  const cookieStore = await cookies();
   cookieStore.set('session', session, { httpOnly: true, secure: true });
 
   return { success: true };
@@ -35,8 +34,7 @@ export async function loginUser(formData: FormData) {
   }
 
   const session = await encrypt({ userId: user.id, email: user.email });
-  
-  const cookieStore = await cookies(); // Added await here
+  const cookieStore = await cookies();
   cookieStore.set('session', session, { httpOnly: true, secure: true });
 
   return { success: true };

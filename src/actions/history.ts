@@ -7,18 +7,16 @@ export async function saveCalculationHistory(moduleType: string, title: string, 
   const session = await getSession();
   
   if (!session?.userId) {
-    return { error: 'Unauthorized' }; // Client will catch this
+    return { error: 'Unauthorized' };
   }
 
-  const history = await db.calculationHistory.create({
-    data: {
-      userId: session.userId,
-      moduleType,
-      title,
-      inputs,
-      results,
-    },
+  await db.calculationHistory.create({
+    userId: session.userId,
+    moduleType,
+    title,
+    inputs,
+    results,
   });
 
-  return { success: true, history };
+  return { success: true };
 }

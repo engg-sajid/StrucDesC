@@ -1,13 +1,9 @@
-import Navbar from "@/components/Navbar";
-import Footer from "@/components/Footer";
 import Link from "next/link";
 import { Target, Lightbulb, Code2 } from "lucide-react";
 
 export default function About() {
   return (
     <div className="min-h-screen bg-white selection:bg-blue-100">
-      <Navbar />
-
       <main className="flex-1 flex flex-col items-center w-full pt-12 pb-20">
         {/* Header Section */}
         <div className="max-w-4xl mx-auto px-8 w-full mb-16 text-center">
@@ -94,8 +90,6 @@ export default function About() {
           </Link>
         </div>
       </main>
-
-      <Footer />
     </div>
   );
 }

@@ -20,7 +20,8 @@ export async function decrypt(input: string): Promise<any> {
 }
 
 export async function getSession() {
-  const cookieStore = await cookies(); // Added await here
+  // CRITICAL: Next.js 15+ requires awaiting cookies() before calling .get()
+  const cookieStore = await cookies();
   const session = cookieStore.get('session')?.value;
   
   if (!session) return null;

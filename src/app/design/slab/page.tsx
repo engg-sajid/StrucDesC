@@ -1,8 +1,6 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import Navbar from "@/components/Navbar";
-import Footer from "@/components/Footer";
 import Link from "next/link";
 import { ArrowLeft, Calculator, RotateCcw, Save } from "lucide-react";
 import AuthModal from "@/components/AuthModal";
@@ -132,7 +130,6 @@ export default function SlabDesign() {
 
   return (
     <div className="min-h-screen bg-white selection:bg-blue-100 flex flex-col">
-      <Navbar />
       <main className="flex-1 flex flex-col items-center w-full pt-12 pb-24 bg-white relative">
         <div className="max-w-4xl mx-auto px-8 w-full mb-10 flex justify-between items-start">
           <div>
@@ -678,6 +675,81 @@ export default function SlabDesign() {
                         {results.sy1Prov}
                       </td>
                     </tr>
+
+                    {/* RESTORED DEFLECTION CHECK SECTION */}
+                    <tr className="bg-slate-50">
+                      <td
+                        colSpan={2}
+                        className="px-6 py-2 font-semibold text-slate-900 border-y border-slate-200"
+                      >
+                        Check for Deflection
+                      </td>
+                    </tr>
+                    <tr>
+                      <td className="px-6 py-3 font-medium">dx/davg (Prov)</td>
+                      <td className="px-6 py-3 border-l border-slate-100">
+                        {results.dxDavg}
+                      </td>
+                    </tr>
+                    <tr>
+                      <td className="px-6 py-3 font-medium">Lx/d (basic)</td>
+                      <td className="px-6 py-3 border-l border-slate-100">
+                        {results.basicLd}
+                      </td>
+                    </tr>
+                    <tr>
+                      <td className="px-6 py-3 font-medium">
+                        Ast_x(reqd) / Ast_x(prov)
+                      </td>
+                      <td className="px-6 py-3 border-l border-slate-100">
+                        {results.astRatio}
+                      </td>
+                    </tr>
+                    <tr>
+                      <td className="px-6 py-3 font-medium">fs =</td>
+                      <td className="px-6 py-3 border-l border-slate-100">
+                        {results.fs}
+                      </td>
+                    </tr>
+                    <tr>
+                      <td className="px-6 py-3 font-medium">
+                        modification factor from fig. 4
+                      </td>
+                      <td className="px-6 py-3 border-l border-slate-100">
+                        {results.modFactor}
+                      </td>
+                    </tr>
+                    <tr>
+                      <td className="px-6 py-3 font-medium">(Lx/d) allowed</td>
+                      <td className="px-6 py-3 border-l border-slate-100">
+                        {results.allowedLd}
+                      </td>
+                    </tr>
+                    <tr>
+                      <td className="px-6 py-3 font-medium">(Lx/d) provided</td>
+                      <td className="px-6 py-3 border-l border-slate-100">
+                        {results.actualLd}
+                      </td>
+                    </tr>
+
+                    <tr className="bg-slate-50">
+                      <td
+                        colSpan={2}
+                        className="px-6 py-2 font-semibold text-slate-900 border-y border-slate-200"
+                      >
+                        Remark & Deflection Check
+                      </td>
+                    </tr>
+                    <tr>
+                      <td className="px-6 py-3 font-bold text-slate-900">
+                        Overall remarks
+                      </td>
+                      <td
+                        className={`px-6 py-3 border-l border-slate-100 font-bold ${results.deflectionCheck.includes("Safe") ? "text-green-600" : "text-red-600"}`}
+                      >
+                        {results.deflectionCheck}
+                      </td>
+                    </tr>
                   </tbody>
                 </table>
               </div>
@@ -718,7 +790,6 @@ export default function SlabDesign() {
           handleSave();
         }}
       />
-      <Footer />
     </div>
   );
 }

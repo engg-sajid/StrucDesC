@@ -1,12 +1,9 @@
-import Navbar from "@/components/Navbar";
-import Footer from "@/components/Footer";
 import { Layers, MoveHorizontal, Columns, ArrowDownToLine } from "lucide-react";
 import Link from "next/link";
 
 export default function Design() {
   return (
-    <div className="min-h-screen bg-white selection:bg-blue-100">
-      <Navbar />
+    <div className="min-h-screen bg-white selection:bg-blue-100 flex flex-col">
       <main className="flex-1 flex flex-col items-center w-full pt-12 pb-24">
         {/* Header Section */}
         <div className="max-w-4xl mx-auto px-8 w-full mb-12 text-center">
@@ -29,8 +26,7 @@ export default function Design() {
               <h2 className="text-2xl font-bold text-slate-900">
                 Concrete Design
               </h2>
-              <div className="flex-1 h-px bg-slate-200"></div>{" "}
-              {/* Decorative line */}
+              <div className="flex-1 h-px bg-slate-200"></div>
             </div>
 
             {/* Option Buttons Grid */}
@@ -124,7 +120,6 @@ export default function Design() {
           </div>
         </div>
       </main>
-      <Footer />
     </div>
   );
 }
