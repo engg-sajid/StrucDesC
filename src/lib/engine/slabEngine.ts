@@ -244,7 +244,10 @@ export function executeSlabAnalysis(inputs: SlabInputs) {
 
     let modFactor = 1.9;
     if (PtxProv > 0) {
-      const calculatedModFactor = 1 / (0.225 + 0.00328 * fs + 0.625 * Math.log10(PtxProv));
+      const denom = 0.225 + 0.00328 * fs + 0.625 * Math.log10(PtxProv);
+      // If denom <= 0, the curve has maxed out off the chart. Default to max 2.0.
+      const calculatedModFactor = denom > 0 ? (1 / denom) : 2.0;
+      
       const cappedModFactor = Math.min(Math.max(calculatedModFactor, 0.5), 2.0);
       modFactor = Math.floor(cappedModFactor * 10) / 10;
     }

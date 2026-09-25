@@ -2,8 +2,8 @@ import { db } from "@/prisma/db";
 import { getSession } from "@/lib/auth";
 import { redirect } from "next/navigation";
 import Link from "next/link";
-import { FileText, Trash2 } from "lucide-react";
-import { deleteCalculationHistory } from "@/actions/deleteHistory";
+import { FileText } from "lucide-react";
+import HistoryCard from "@/components/HistoryCard"; // Import the new component
 
 export default async function HistoryPage() {
   const session = await getSession();
@@ -31,6 +31,9 @@ export default async function HistoryPage() {
       moduleType: String(calc.moduleType || ""),
       title: String(calc.title || ""),
       createdAt: dateStr,
+      // Map the inputs and results so the card can display them
+      inputs: calc.inputs || {},
+      results: calc.results || {},
     };
   });
 
@@ -60,7 +63,7 @@ export default async function HistoryPage() {
               You haven't saved any calculations yet.
             </p>
             <Link
-              href="/design"
+              href="/design/slab"
               className="bg-[#1d64d8] text-white px-6 py-2.5 rounded-md font-medium hover:bg-blue-700 transition-colors"
             >
               Start a Design
@@ -69,37 +72,8 @@ export default async function HistoryPage() {
         ) : (
           <div className="grid gap-4">
             {savedCalculations.map((calc) => (
-              <div
-                key={calc.id}
-                className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm flex items-center justify-between hover:border-blue-300 transition-colors"
-              >
-                <div>
-                  <h3 className="text-lg font-bold text-slate-900">
-                    {calc.title}
-                  </h3>
-                  <div className="flex gap-4 mt-2 text-sm text-slate-500">
-                    <span className="font-semibold text-blue-600 px-2 py-0.5 bg-blue-50 rounded">
-                      {calc.moduleType}
-                    </span>
-                    <span>{new Date(calc.createdAt).toLocaleDateString()}</span>
-                  </div>
-                </div>
-
-                <form
-                  action={async () => {
-                    "use server";
-                    await deleteCalculationHistory(calc.id);
-                  }}
-                >
-                  <button
-                    type="submit"
-                    className="text-slate-400 hover:text-red-600 transition-colors p-2 rounded-lg hover:bg-red-50"
-                    title="Delete Design"
-                  >
-                    <Trash2 className="w-5 h-5" />
-                  </button>
-                </form>
-              </div>
+              /* Use the interactive card */
+              <HistoryCard key={calc.id} calc={calc} />
             ))}
           </div>
         )}

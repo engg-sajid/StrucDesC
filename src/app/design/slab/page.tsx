@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { ArrowLeft, Calculator, RotateCcw, Save } from "lucide-react";
 import AuthModal from "@/components/AuthModal";
@@ -27,6 +27,8 @@ export default function SlabDesign() {
   const [saveStatus, setSaveStatus] = useState("");
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
 
+  const typingTimer = useRef<NodeJS.Timeout | null>(null);
+
   useEffect(() => {
     resetForm();
   }, []);
@@ -52,12 +54,52 @@ export default function SlabDesign() {
         customDepth,
         customSx,
       });
+
       setResults(res);
       setEditableDepth(res.assumedD);
       setEditableSx(res.sxProv !== "-" ? res.sxProv : "");
       setSaveStatus("");
     } catch (err: any) {
-      alert(err.message);
+      // 1. Only show an alert for intentional manual spacing violations
+      if (err.message.includes("Manual spacing")) {
+        alert(err.message);
+        if (results)
+          setEditableSx(results.sxProv !== "-" ? results.sxProv : "");
+      }
+      // 2. Ignore intermediate typing errors (like typing '1' before '100')
+      else if (err.message.includes("Manual thickness")) {
+        console.warn("Ignored intermediate depth:", err.message);
+      } else {
+        alert(err.message);
+      }
+    }
+  };
+
+  const handleDepthChange = (val: string) => {
+    setEditableDepth(val);
+    if (typingTimer.current) clearTimeout(typingTimer.current);
+
+    const d = Number(val);
+    // Wait for the user to finish typing a logically possible depth (> cover + bar)
+    if (val !== "" && d > cover + barDia && results) {
+      typingTimer.current = setTimeout(() => {
+        // Pass undefined for customSx so the engine calculates a NEW safe spacing
+        // preventing the "Spacing Exceeded" crash when decreasing depth.
+        runAnalysis(undefined, d, undefined);
+      }, 500);
+    }
+  };
+
+  const handleSxChange = (val: string) => {
+    setEditableSx(val);
+    if (typingTimer.current) clearTimeout(typingTimer.current);
+
+    const sx = Number(val);
+    if (val !== "" && sx > 0 && results) {
+      typingTimer.current = setTimeout(() => {
+        // Keep depth locked to current value, only test the new manual spacing
+        runAnalysis(undefined, Number(editableDepth), sx);
+      }, 500);
     }
   };
 
@@ -359,6 +401,11 @@ export default function SlabDesign() {
             <div className="pt-4">
               <button
                 type="submit"
+                onClick={() => {
+                  // Clear overrides so engine uses optimal values for the baseline calculation
+                  setEditableDepth("");
+                  setEditableSx("");
+                }}
                 className="w-full bg-[#1d64d8] text-white px-8 py-4 rounded-lg font-bold text-lg hover:bg-blue-700 transition-colors shadow-sm flex justify-center items-center gap-2"
               >
                 <Calculator className="w-5 h-5" />
@@ -423,35 +470,27 @@ export default function SlabDesign() {
                     </tr>
 
                     <tr className="bg-blue-50/50">
-                      <td className="px-6 py-3 font-bold text-slate-900">
-                        Overall thickness assumed
+                      <td className="px-6 py-3 font-bold text-slate-900 flex items-center justify-between">
+                        <span>Overall thickness assumed</span>
+                        <span className="text-[10px] bg-blue-100 text-blue-700 px-2 py-0.5 rounded uppercase font-bold tracking-wider">
+                          Dynamic
+                        </span>
                       </td>
                       <td className="px-6 py-3 border-l border-slate-100">
-                        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
-                          <div className="flex items-center">
-                            <input
-                              type="number"
-                              step="5"
-                              value={editableDepth}
-                              onChange={(e) => setEditableDepth(e.target.value)}
-                              className="w-24 px-3 py-1.5 rounded border border-slate-300 bg-white font-bold text-[#1d64d8]"
-                            />
-                            <span className="text-slate-600 font-medium ml-2">
-                              mm
-                            </span>
-                          </div>
-                          <button
-                            onClick={() =>
-                              runAnalysis(
-                                undefined,
-                                Number(editableDepth),
-                                Number(editableSx),
-                              )
-                            }
-                            className="bg-slate-800 text-white px-3 py-1.5 rounded text-xs font-semibold hover:bg-slate-700 transition-colors"
-                          >
-                            Recalculate using manual thickness
-                          </button>
+                        <div className="flex items-center">
+                          <input
+                            type="number"
+                            step="5"
+                            value={editableDepth}
+                            onChange={(e) => handleDepthChange(e.target.value)}
+                            onKeyDown={(e) => {
+                              if (e.key === "Enter") e.preventDefault();
+                            }}
+                            className="w-24 px-3 py-1.5 rounded border border-slate-300 bg-white font-bold text-[#1d64d8] focus:ring-2 focus:ring-blue-500 outline-none"
+                          />
+                          <span className="text-slate-600 font-medium ml-2">
+                            mm
+                          </span>
                         </div>
                       </td>
                     </tr>
@@ -621,39 +660,31 @@ export default function SlabDesign() {
                         colSpan={2}
                         className="px-6 py-2 font-semibold text-slate-900 border-y border-slate-200"
                       >
-                        Spacing Provided (with 8mm dia bar)
+                        Spacing Provided (with {barDia}mm dia bar)
                       </td>
                     </tr>
                     <tr className="bg-blue-50/50">
-                      <td className="px-6 py-3 font-bold text-slate-900">
-                        Sx (Prov)
+                      <td className="px-6 py-3 font-bold text-slate-900 flex items-center justify-between">
+                        <span>Sx (Prov)</span>
+                        <span className="text-[10px] bg-blue-100 text-blue-700 px-2 py-0.5 rounded uppercase font-bold tracking-wider">
+                          Dynamic
+                        </span>
                       </td>
                       <td className="px-6 py-3 border-l border-slate-100">
-                        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
-                          <div className="flex items-center">
-                            <input
-                              type="number"
-                              step="5"
-                              value={editableSx}
-                              onChange={(e) => setEditableSx(e.target.value)}
-                              className="w-24 px-3 py-1.5 rounded border border-slate-300 bg-white font-bold text-[#1d64d8]"
-                            />
-                            <span className="text-slate-600 font-medium ml-2">
-                              mm
-                            </span>
-                          </div>
-                          <button
-                            onClick={() =>
-                              runAnalysis(
-                                undefined,
-                                Number(editableDepth),
-                                Number(editableSx),
-                              )
-                            }
-                            className="bg-slate-800 text-white px-3 py-1.5 rounded text-xs font-semibold hover:bg-slate-700"
-                          >
-                            Recalculate with manual Sx
-                          </button>
+                        <div className="flex items-center">
+                          <input
+                            type="number"
+                            step="5"
+                            value={editableSx}
+                            onChange={(e) => handleSxChange(e.target.value)}
+                            onKeyDown={(e) => {
+                              if (e.key === "Enter") e.preventDefault();
+                            }}
+                            className="w-24 px-3 py-1.5 rounded border border-slate-300 bg-white font-bold text-[#1d64d8] focus:ring-2 focus:ring-blue-500 outline-none"
+                          />
+                          <span className="text-slate-600 font-medium ml-2">
+                            mm
+                          </span>
                         </div>
                       </td>
                     </tr>
@@ -676,7 +707,6 @@ export default function SlabDesign() {
                       </td>
                     </tr>
 
-                    {/* RESTORED DEFLECTION CHECK SECTION */}
                     <tr className="bg-slate-50">
                       <td
                         colSpan={2}
