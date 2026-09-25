@@ -269,7 +269,10 @@ export function executeSlabAnalysis(inputs: SlabInputs) {
     if (safePtx === 0) {
       deflectionCheck = "Fails - Section too thin";
     } else {
-      deflectionCheck = isDeflectionSafe ? "Safe against excessive deflection" : "Fails deflection criteria";
+      // Direct update for the guide
+      deflectionCheck = isDeflectionSafe 
+        ? "Safe against excessive deflection" 
+        : "Fails deflection criteria. Guide: Decrease your main bar spacing (Sx) to keep it safe.";
     }
 
     finalResults = {
